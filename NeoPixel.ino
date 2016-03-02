@@ -35,8 +35,8 @@ uint32_t getRGB(int hue, int sat, int val);
 
 uint32_t color;
 int hue = 0;
-int brightness = 0;
-float saturation = 0;
+int brightness = 255;
+float saturation = 255;
 
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(24, PIN, NEO_GRB + NEO_KHZ800);
 WiFiClient wclient;
@@ -117,7 +117,7 @@ void callback(const MQTT::Publish& pub) {
 }
 
 void setup() {
-  Serial.begin(115200);
+  Serial.begin(76800);
   Serial.println("Booting");
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
