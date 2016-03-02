@@ -42,21 +42,26 @@ Adafruit_NeoPixel strip = Adafruit_NeoPixel(24, PIN, NEO_GRB + NEO_KHZ800);
 WiFiClient wclient;
 // Update these with values suitable for your network.
 IPAddress MQTTserver(192, 168, 11, 22);
-PubSubClient client(wclient, MQTTserver);
+//PubSubClient client(wclient);
+PubSubClient client(MQTTserver, 1883, wclient);
 
-void callback(const MQTT::Publish& pub) {
+void callback (char* topic, byte* payload, uint8_t length) {
   uint16_t i, j;
 
-  String myMessage = String(pub.payload_string());
   // handle message arrived
-  Serial.print(pub.topic());
+  char* myPayload = (char *) malloc(sizeof(char) * (length + 1));
+  strncpy(myPayload, (char *) payload, length);
+  myPayload[length] = '\0';
+  Serial.print(topic);
+  // Serial.print(" (");
+  // Serial.print(length);
+  // Serial.print(") => ");
   Serial.print(" => ");
-  String myTopic = String(pub.topic());
+  Serial.println(myPayload);
 
-  if (myTopic == "NeoPixel") {
-    Serial.println(pub.payload_string());
 
-    if (pub.payload_string() == "on") {
+  if (! strcmp(topic, "NeoPixel")) {
+    if (! strncmp((char*) payload, "on", length)) {
       hue = 0;
       brightness = 255;
       saturation = 255;
@@ -78,24 +83,20 @@ void callback(const MQTT::Publish& pub) {
       }
       strip.show();
     }
-
   }
-  else if (myTopic == "NeoPixelBrightness") {
-    Serial.println(pub.payload_string());
 
+  else if (! strcmp(topic, "NeoPixelBrightness")) {
     // [0; 100] -> [0; 255]
-    brightness = myMessage.toInt() * 255 / 100;
+    brightness = atoi(myPayload) * 255 / 100;
     color = getRGB(hue, saturation, brightness);
     for (i = 0; i < strip.numPixels(); i++) {
       strip.setPixelColor(i, color);
     }
     strip.show();
-
   }
-  else if(myTopic == "NeoPixelHue") {
-    Serial.println(pub.payload_string());
+  else if (! strcmp(topic, "NeoPixelHue")) {
     // [0; 360]
-    hue = myMessage.toInt();
+    hue = atoi(myPayload);
     color = getRGB(hue, saturation, brightness);
     for(i=0; i<strip.numPixels(); i++) {
       strip.setPixelColor(i, color);
@@ -103,11 +104,9 @@ void callback(const MQTT::Publish& pub) {
     strip.show();
   }
 
-  else if (myTopic == "NeoPixelSaturation") {
-    Serial.println(pub.payload_string());
-
+  else if (! strcmp(topic, "NeoPixelSaturation")) {
     // [0; 100] -> [0; 255]
-    saturation = myMessage.toInt() * 255 / 100;
+    saturation = atoi(myPayload) * 255 / 100;
     color = getRGB(hue, saturation, brightness);
     for (i = 0; i < strip.numPixels(); i++) {
       strip.setPixelColor(i, color);
@@ -163,7 +162,7 @@ void setup() {
   Serial.println(WiFi.localIP());
 
   // MQTT callback
-  client.set_callback(callback);
+  client.setCallback(callback);
 
   strip.begin();
   strip.show(); // Initialize all pixels to 'off'
