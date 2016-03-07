@@ -7,7 +7,6 @@
 #include <Adafruit_NeoPixel.h>
 
 #define PIN 5
-#define BUFFER_SIZE 100
 
 const byte dim_curve[] = {
   0,   1,   1,   2,   2,   2,   2,   2,   2,   3,   3,   3,   3,   3,   3,   3,
@@ -46,7 +45,7 @@ IPAddress MQTTserver(192, 168, 11, 22);
 PubSubClient client(MQTTserver, 1883, wclient);
 
 void callback (char* topic, byte* payload, uint8_t length) {
-  uint16_t i, j;
+  uint16_t i;
 
   // handle message arrived
   char* myPayload = (char *) malloc(sizeof(char) * (length + 1));
