@@ -61,7 +61,7 @@ void callback (char* topic, byte* payload, uint8_t length) {
 
   if (! strcmp(topic, "NeoPixel")) {
     if (! strncmp((char*) payload, "on", length)) {
-      hue = 0;
+      // reset brightness and saturation, keep hue
       brightness = 255;
       saturation = 255;
 
@@ -72,9 +72,8 @@ void callback (char* topic, byte* payload, uint8_t length) {
       strip.show();
     }
     else {
-      hue = 0;
+      // turn off, set brightness to 0
       brightness = 0;
-      saturation = 0;
 
       color = getRGB(hue, saturation, brightness);
       for (i=0; i<strip.numPixels(); i++) {
